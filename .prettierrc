@@ -7,5 +7,20 @@
       "files": ".prettierrc",
       "options": { "parser": "json" }
     }
-  ]
+  ],
+
+  "arrowParens": "always",
+  "bracketSpacing": true,
+  "endOfLine": "lf",
+  "htmlWhitespaceSensitivity": "css",
+  "insertPragma": false,
+  "jsxBracketSameLine": true,
+  "jsxSingleQuote": true,
+  "proseWrap": "preserve",
+  "quoteProps": "as-needed",
+  "requirePragma": false,
+  "semi": false,
+  "tabWidth": 4,
+  "useTabs": false,
+  "vueIndentScriptAndStyle": false
 }
