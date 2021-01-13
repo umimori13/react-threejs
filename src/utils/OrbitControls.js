@@ -867,8 +867,8 @@ var OrbitControls = function(object, domElement) {
         )
             return
 
-        event.preventDefault()
-        event.stopPropagation()
+        // event.preventDefault()
+        // event.stopPropagation()
 
         scope.dispatchEvent(startEvent)
 
@@ -1034,11 +1034,11 @@ var OrbitControls = function(object, domElement) {
     scope.domElement.addEventListener('contextmenu', onContextMenu, false)
 
     scope.addEventListener('mousedown', onMouseDown, false)
-    scope.domElement.addEventListener('wheel', onMouseWheel, false)
+    scope.domElement.addEventListener('wheel', onMouseWheel, { passive: true })
 
-    scope.domElement.addEventListener('touchstart', onTouchStart, false)
-    scope.domElement.addEventListener('touchend', onTouchEnd, false)
-    scope.domElement.addEventListener('touchmove', onTouchMove, false)
+    // scope.domElement.addEventListener('touchstart', onTouchStart, false)
+    // scope.domElement.addEventListener('touchend', onTouchEnd, false)
+    // scope.domElement.addEventListener('touchmove', onTouchMove, false)
 
     scope.domElement.addEventListener('keydown', onKeyDown, false)
 

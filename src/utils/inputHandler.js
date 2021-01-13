@@ -47,7 +47,7 @@ export class InputHandler extends EventDispatcher {
         this.domElement.addEventListener(
             'mousewheel',
             this.onMouseWheel.bind(this),
-            true,
+            { passive: true },
         )
     }
 
