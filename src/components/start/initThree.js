@@ -18,15 +18,17 @@ import {
     MeshStandardMaterial,
     Fog,
 } from 'three'
-import door from './door'
+import { circle, door, ground, wall } from './basicComponents'
 import { OrbitControls } from '../../utils/OrbitControls'
 import { InputHandler } from '../../utils/inputHandler'
-import wall from './wall'
 
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js'
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js'
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js'
 import { GUI } from 'dat.gui'
+
+import TWEEN, { Tween } from '@tweenjs/tween.js'
+import outLine from './basicComponents/outLine'
 
 const InitThree = () => {
     const mount = useRef(null)
@@ -52,11 +54,16 @@ const InitThree = () => {
         }
 
         scene.fog = new Fog(0xffffff, 0.1, 1000)
-        camera.position.z = 25
+
         const [mesh, anoMesh] = door()
         scene.add(mesh, anoMesh)
         const wallMesh = wall()
         scene.add(wallMesh)
+        scene.add(ground())
+        const theCircle = circle(1)
+        theCircle.position.set(31 / 2, 23, 0.1)
+        scene.add(theCircle)
+
         renderer.setClearColor('#000000')
         renderer.setSize(width, height)
         renderer.outputEncoding = sRGBEncoding
@@ -71,6 +78,9 @@ const InitThree = () => {
         pointLight.position.set(0, 0, 0.1)
         scene.add(pointLight)
 
+        const [outline1, outline2] = outLine()
+        scene.add(outline1, outline2)
+
         // const ambLight = new AmbientLight(0x404040)
         // scene.add(ambLight)
 
@@ -82,6 +92,9 @@ const InitThree = () => {
 
         const orbitControls = new OrbitControls(camera, renderer.domElement)
         inputHandler.addInputListener(orbitControls)
+
+        camera.position.set(31 / 2, 13, 25)
+        orbitControls.target.set(31 / 2, 13, 0)
 
         const theRenderScene = new RenderPass(scene, camera)
 
@@ -143,13 +156,25 @@ const InitThree = () => {
             // renderScene()
         }
 
+        let count = 0
         const animate = () => {
             // cube.rotation.x += 0.01
             // cube.rotation.y += 0.01
             frameId = window.requestAnimationFrame(animate)
             orbitControls.update()
+            TWEEN.update()
             // renderScene()
             composer.render()
+
+            // count += 8
+            if (outline1) {
+                outline1.geometry.setDrawRange(0, count)
+                outline1.material.uniforms.time.value += 0.01
+            }
+            if (outline2) {
+                outline2.geometry.setDrawRange(0, count)
+                outline2.material.uniforms.time.value += 0.01
+            }
         }
 
         const start = () => {
@@ -179,6 +204,7 @@ const InitThree = () => {
             orbitControls.dispose()
             inputHandler.dispose()
 
+            gui.destroy()
             // composer.renderTarget1.dispose()
             // composer.renderTarget2.dispose()
             // scene.remove(cube)

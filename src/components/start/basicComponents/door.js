@@ -8,7 +8,7 @@ import {
     PolyhedronBufferGeometry,
     TextureLoader,
 } from 'three'
-import jpg from '../../assets/textures/door_background_1.jpg'
+import jpg from '../../../assets/textures/door_background_1.jpg'
 
 const door = () => {
     const verticesOfCube = [
@@ -27,7 +27,6 @@ const door = () => {
         newVerticesOfCube.push([...val, 0])
         newVerticesOfCube.push([...val, -3])
     })
-
     const indicesOfFaces = []
     newVerticesOfCube.forEach((val, idx, arr) => {
         const i = idx

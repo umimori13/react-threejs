@@ -11,7 +11,7 @@ import {
     RepeatWrapping,
     TextureLoader,
 } from 'three'
-import jpg from '../../assets/textures/Copper_background.jpg'
+import jpg from '../../../assets/textures/Copper_background.jpg'
 
 const wall = () => {
     const verticesOfCube = [

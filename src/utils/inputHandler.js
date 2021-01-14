@@ -1,4 +1,4 @@
-import { EventDispatcher, MOUSE, Raycaster, Scene, Vector2 } from 'three'
+import { EventDispatcher, MOUSE, Raycaster, Vector2 } from 'three'
 import Utils from './utils'
 
 export class InputHandler extends EventDispatcher {
@@ -47,7 +47,7 @@ export class InputHandler extends EventDispatcher {
         this.domElement.addEventListener(
             'mousewheel',
             this.onMouseWheel.bind(this),
-            { passive: true },
+            true,
         )
     }
 
@@ -66,6 +66,7 @@ export class InputHandler extends EventDispatcher {
                 inputListener.dispatchEvent({
                     type: 'mousedown',
                     // viewer: this.viewer,
+                    inputListener: inputListener,
                     event: e,
                     mouse: this.mouse,
                 })
@@ -75,6 +76,8 @@ export class InputHandler extends EventDispatcher {
                 let object = hovered.object
                 object.dispatchEvent({
                     type: 'mousedown',
+                    event: e,
+                    object: object,
                     // viewer: this.viewer,
                     consume: consume,
                 })
@@ -276,6 +279,7 @@ export class InputHandler extends EventDispatcher {
                         event: e,
                         drag: this.drag,
                         viewer: this.viewer,
+                        // eslint-disable-next-line no-loop-func
                         consume: () => {
                             dragConsumed = true
                         },
@@ -293,16 +297,6 @@ export class InputHandler extends EventDispatcher {
                 .find((a) => true)
 
             if (curr !== prev) {
-                if (curr) {
-                    if (this.logMessages)
-                        console.log(
-                            `${this.constructor.name}: mouseover: ${curr.name}`,
-                        )
-                    curr.dispatchEvent({
-                        type: 'mouseover',
-                        object: curr,
-                    })
-                }
                 if (prev) {
                     if (this.logMessages)
                         console.log(
@@ -311,6 +305,16 @@ export class InputHandler extends EventDispatcher {
                     prev.dispatchEvent({
                         type: 'mouseleave',
                         object: prev,
+                    })
+                }
+                if (curr) {
+                    if (this.logMessages)
+                        console.log(
+                            `${this.constructor.name}: mouseover: ${curr.name}`,
+                        )
+                    curr.dispatchEvent({
+                        type: 'mouseover',
+                        object: curr,
                     })
                 }
             }
@@ -324,7 +328,6 @@ export class InputHandler extends EventDispatcher {
                     object.dispatchEvent({
                         type: 'mousemove',
                         object: object,
-                        point: hoveredElements,
                     })
                 }
             }
