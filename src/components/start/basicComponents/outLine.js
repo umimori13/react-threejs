@@ -154,6 +154,7 @@ function outLine() {
             thirdGeometry,
             fourGeometry,
         ])
+        lastGeometry.setDrawRange(0, 0)
         // lastGeometry.merge(firstGeometry)
         // lastGeometry.merge(midGeomtry)
         // lastGeometry.merge(secondGeometry)
@@ -301,7 +302,7 @@ function outLine() {
             thirdGeometry,
             fourGeometry,
         ])
-        // lastGeometry.setDrawRange(0, 2500)
+        lastGeometry.setDrawRange(0, 0)
         // lastGeometry.merge(firstGeometry)
         // lastGeometry.merge(midGeomtry)
         // lastGeometry.merge(secondGeometry)

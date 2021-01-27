@@ -29,6 +29,10 @@ import { GUI } from 'dat.gui'
 
 import TWEEN, { Tween } from '@tweenjs/tween.js'
 import outLine from './basicComponents/outLine'
+import status from './status'
+
+import { RectAreaLightUniformsLib } from 'three/examples/jsm/lights/RectAreaLightUniformsLib'
+import { RectAreaLightHelper } from 'three/examples/jsm/helpers/RectAreaLightHelper'
 
 const InitThree = () => {
     const mount = useRef(null)
@@ -55,6 +59,7 @@ const InitThree = () => {
 
         scene.fog = new Fog(0xffffff, 0.1, 1000)
 
+        RectAreaLightUniformsLib.init()
         const [mesh, anoMesh] = door()
         scene.add(mesh, anoMesh)
         const wallMesh = wall()
@@ -75,14 +80,38 @@ const InitThree = () => {
                 new MeshBasicMaterial({ color: 0xffffff }),
             ),
         )
-        pointLight.position.set(0, 0, 0.1)
-        scene.add(pointLight)
+        // pointLight.position.set(0, 0, 0.1)
+        // scene.add(pointLight)
+
+        const rectLight1 = new RectAreaLight(0xffffff, 1, 1, 5)
+        rectLight1.lookAt(0, 0, 1)
+        rectLight1.position.set(-1, 10, 0.1)
+        scene.add(rectLight1)
+
+        const rectLight1Copy = new RectAreaLight(0xffffff, 1, 5, 5)
+        rectLight1Copy.position.set(-1, 10, 6.1)
+        scene.add(rectLight1Copy)
+
+        const rectLightHelper = new RectAreaLightHelper(rectLight1)
+        rectLight1.add(rectLightHelper)
+
+        const rectLight2 = new RectAreaLight(0xffffff, 1, 1, 5)
+        rectLight2.lookAt(0, 0, 1)
+        rectLight2.position.set(32, 10, 0.1)
+        scene.add(rectLight2)
+
+        const rectLight2Copy = new RectAreaLight(0xffffff, 1, 5, 5)
+        rectLight2Copy.position.set(32, 10, 6.1)
+        scene.add(rectLight2Copy)
+
+        const rectLightHelper2 = new RectAreaLightHelper(rectLight2)
+        rectLight2.add(rectLightHelper2)
 
         const [outline1, outline2] = outLine()
         scene.add(outline1, outline2)
 
-        // const ambLight = new AmbientLight(0x404040)
-        // scene.add(ambLight)
+        const ambLight = new AmbientLight(0x010101)
+        scene.add(ambLight)
 
         const inputHandler = new InputHandler(
             camera,
@@ -117,7 +146,7 @@ const InitThree = () => {
 
         const composer = new EffectComposer(renderer)
         composer.addPass(theRenderScene)
-        // composer.addPass(bloomPass)
+        composer.addPass(bloomPass)
 
         const gui = new GUI()
 
@@ -165,15 +194,19 @@ const InitThree = () => {
             TWEEN.update()
             // renderScene()
             composer.render()
+            rectLightHelper.update()
+            rectLightHelper2.update()
 
-            // count += 8
-            if (outline1) {
-                outline1.geometry.setDrawRange(0, count)
-                outline1.material.uniforms.time.value += 0.01
-            }
-            if (outline2) {
-                outline2.geometry.setDrawRange(0, count)
-                outline2.material.uniforms.time.value += 0.01
+            if (status.beginLine) {
+                count += 8
+                if (outline1) {
+                    outline1.geometry.setDrawRange(0, count)
+                    outline1.material.uniforms.time.value += 0.01
+                }
+                if (outline2) {
+                    outline2.geometry.setDrawRange(0, count)
+                    outline2.material.uniforms.time.value += 0.01
+                }
             }
         }
 

@@ -9,6 +9,7 @@ import {
     MeshBasicMaterial,
     Vector3,
 } from 'three'
+import status from '../status'
 
 const circle = (radius) => {
     const group = new Group()
@@ -33,6 +34,7 @@ const circle = (radius) => {
                     })
                     .start()
             } else {
+                status.beginLine = true
                 TWEEN.removeAll()
                 const speed = { x: group.userData.speed }
                 new Tween(speed)
