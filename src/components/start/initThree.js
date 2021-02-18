@@ -18,7 +18,7 @@ import {
     MeshStandardMaterial,
     Fog,
 } from 'three'
-import { circle, door, ground, wall } from './basicComponents'
+import { circle, door, ground, wall, outLine, inLine } from './basicComponents'
 import { OrbitControls } from '../../utils/OrbitControls'
 import { InputHandler } from '../../utils/inputHandler'
 
@@ -28,7 +28,7 @@ import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPa
 import { GUI } from 'dat.gui'
 
 import TWEEN, { Tween } from '@tweenjs/tween.js'
-import outLine from './basicComponents/outLine'
+
 import status from './status'
 
 import { RectAreaLightUniformsLib } from 'three/examples/jsm/lights/RectAreaLightUniformsLib'
@@ -61,10 +61,10 @@ const InitThree = () => {
 
         RectAreaLightUniformsLib.init()
         const [mesh, anoMesh] = door()
-        scene.add(mesh, anoMesh)
+        // scene.add(mesh, anoMesh)
         const wallMesh = wall()
-        scene.add(wallMesh)
-        scene.add(ground())
+        // scene.add(wallMesh)
+        // scene.add(ground())
         const theCircle = circle(1)
         theCircle.position.set(31 / 2, 23, 0.1)
         scene.add(theCircle)
@@ -83,24 +83,24 @@ const InitThree = () => {
         // pointLight.position.set(0, 0, 0.1)
         // scene.add(pointLight)
 
-        const rectLight1 = new RectAreaLight(0xffffff, 1, 1, 5)
+        const rectLight1 = new RectAreaLight(0xffffff, 0, 1, 5)
         rectLight1.lookAt(0, 0, 1)
         rectLight1.position.set(-1, 10, 0.1)
         scene.add(rectLight1)
 
-        const rectLight1Copy = new RectAreaLight(0xffffff, 1, 5, 5)
+        const rectLight1Copy = new RectAreaLight(0xffffff, 0, 5, 5)
         rectLight1Copy.position.set(-1, 10, 6.1)
         scene.add(rectLight1Copy)
 
         const rectLightHelper = new RectAreaLightHelper(rectLight1)
         rectLight1.add(rectLightHelper)
 
-        const rectLight2 = new RectAreaLight(0xffffff, 1, 1, 5)
+        const rectLight2 = new RectAreaLight(0xffffff, 0, 1, 5)
         rectLight2.lookAt(0, 0, 1)
         rectLight2.position.set(32, 10, 0.1)
         scene.add(rectLight2)
 
-        const rectLight2Copy = new RectAreaLight(0xffffff, 1, 5, 5)
+        const rectLight2Copy = new RectAreaLight(0xffffff, 0, 5, 5)
         rectLight2Copy.position.set(32, 10, 6.1)
         scene.add(rectLight2Copy)
 
@@ -109,6 +109,9 @@ const InitThree = () => {
 
         const [outline1, outline2] = outLine()
         scene.add(outline1, outline2)
+
+        const [inline1, inline2] = inLine()
+        scene.add(inline1, inline2)
 
         const ambLight = new AmbientLight(0x010101)
         scene.add(ambLight)
@@ -129,9 +132,9 @@ const InitThree = () => {
 
         const params = {
             exposure: 1,
-            bloomStrength: 1.5,
+            bloomStrength: 1,
             bloomThreshold: 0,
-            bloomRadius: 0,
+            bloomRadius: 1,
         }
 
         const bloomPass = new UnrealBloomPass(
@@ -186,6 +189,8 @@ const InitThree = () => {
         }
 
         let count = 0
+        let lightAnimate = false
+        let inlineCount = 0
         const animate = () => {
             // cube.rotation.x += 0.01
             // cube.rotation.y += 0.01
@@ -206,6 +211,29 @@ const InitThree = () => {
                 if (outline2) {
                     outline2.geometry.setDrawRange(0, count)
                     outline2.material.uniforms.time.value += 0.01
+                }
+                if (count > 5000 && !lightAnimate) {
+                    lightAnimate = true
+                    const intensity = { intensity: 0 }
+                    new Tween(intensity)
+                        .easing(TWEEN.Easing.Bounce.In)
+                        .to({ intensity: 1 }, 5000)
+                        .onUpdate(() => {
+                            rectLight1.intensity = intensity.intensity
+                            rectLight1Copy.intensity = intensity.intensity
+                            rectLight2.intensity = intensity.intensity
+                            rectLight2Copy.intensity = intensity.intensity
+                        })
+                        .start()
+                }
+                if (count > 5000) {
+                    inlineCount += 8
+                    inline1.geometry.setDrawRange(0, inlineCount)
+                    inline1.material.uniforms.time.value += 0.01
+                    inline1.material.uniforms.color.value += 0.01
+                    inline2.geometry.setDrawRange(0, inlineCount)
+                    inline2.material.uniforms.time.value += 0.01
+                    inline2.material.uniforms.color.value += 0.01
                 }
             }
         }

@@ -56,7 +56,7 @@ const circle = (radius) => {
         geometry.vertices.push(new Vector3(0, 0, 0))
         geometry.vertices.push(new Vector3(-radius, 0, 0))
         geometry.vertices.push(new Vector3(0, 0, 0))
-        const material = new LineBasicMaterial({ color: 0x404040 })
+        const material = new LineBasicMaterial({ color: 0x000000 })
         const line = new Line(geometry, material)
         group.add(line)
     }
