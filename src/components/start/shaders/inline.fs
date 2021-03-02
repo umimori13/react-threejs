@@ -11,7 +11,7 @@ void main() {
         float res = PI * 0.5;
         alpha = sin( mod((vUv.x- time)  * 3.0,  res));
     // }
-    gl_FragColor = vec4(vec3(color.x * sin( mod((vUv.x- time)  * 3.0,  res),color.y,color.z), alpha);
+    gl_FragColor = vec4(vec3(color.x,color.y,color.z), alpha);
     // if(gl_FragColor.a < 0.3){
     //     discard;
     // }

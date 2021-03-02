@@ -17,8 +17,18 @@ import {
     sRGBEncoding,
     MeshStandardMaterial,
     Fog,
+    Vector3,
+    Color,
 } from 'three'
-import { circle, door, ground, wall, outLine, inLine } from './basicComponents'
+import {
+    circle,
+    door,
+    ground,
+    wall,
+    outLine,
+    inLine,
+    tunnel,
+} from './basicComponents'
 import { OrbitControls } from '../../utils/OrbitControls'
 import { InputHandler } from '../../utils/inputHandler'
 
@@ -33,6 +43,8 @@ import status from './status'
 
 import { RectAreaLightUniformsLib } from 'three/examples/jsm/lights/RectAreaLightUniformsLib'
 import { RectAreaLightHelper } from 'three/examples/jsm/helpers/RectAreaLightHelper'
+
+import * as Noise from './perlin'
 
 const InitThree = () => {
     const mount = useRef(null)
@@ -61,13 +73,17 @@ const InitThree = () => {
 
         RectAreaLightUniformsLib.init()
         const [mesh, anoMesh] = door()
-        // scene.add(mesh, anoMesh)
+        scene.add(mesh, anoMesh)
         const wallMesh = wall()
-        // scene.add(wallMesh)
-        // scene.add(ground())
+        scene.add(wallMesh)
+        scene.add(ground())
         const theCircle = circle(1)
         theCircle.position.set(31 / 2, 23, 0.1)
         scene.add(theCircle)
+
+        const [theTunnel, tunnelPath, tunnelBackground] = tunnel()
+        scene.add(theTunnel)
+        scene.add(tunnelBackground)
 
         renderer.setClearColor('#000000')
         renderer.setSize(width, height)
@@ -191,11 +207,27 @@ const InitThree = () => {
         let count = 0
         let lightAnimate = false
         let inlineCount = 0
+        let percentage = 0
+
+        // Define the precision of the finale tube, the amount of divisions
+        const tubeDetail = 500
+        // Define the precision of the circles
+        const circlesDetail = 10
+
+        // Define the radius of the finale tube
+        const radius = 8
+        // Get all the circles that will compose the tube
+        const frames = tunnelPath.computeFrenetFrames(tubeDetail, true)
+
+        console.log('Noise :>> ', Noise)
+        let tunnelTime = 0
+        let animateTunnel = true
+        let animateDoor = true
         const animate = () => {
             // cube.rotation.x += 0.01
             // cube.rotation.y += 0.01
             frameId = window.requestAnimationFrame(animate)
-            orbitControls.update()
+            // orbitControls.update()
             TWEEN.update()
             // renderScene()
             composer.render()
@@ -227,14 +259,116 @@ const InitThree = () => {
                         .start()
                 }
                 if (count > 5000) {
-                    inlineCount += 8
+                    inlineCount += 10
                     inline1.geometry.setDrawRange(0, inlineCount)
                     inline1.material.uniforms.time.value += 0.01
-                    inline1.material.uniforms.color.value += 0.01
+                    inline1.material.uniforms.color.value.setHSL(
+                        (inlineCount % 10000) / 10000,
+                        0.8,
+                        0.5,
+                    )
                     inline2.geometry.setDrawRange(0, inlineCount)
                     inline2.material.uniforms.time.value += 0.01
-                    inline2.material.uniforms.color.value += 0.01
+                    inline2.material.uniforms.color.value.setHSL(
+                        (inlineCount % 10000) / 10000,
+                        0.8,
+                        0.5,
+                    )
+
+                    if ((inlineCount > 10000) & animateDoor) {
+                        new Tween({ y: 0 })
+                            .easing(TWEEN.Easing.Linear.None)
+                            .to({ y: 1 }, 5000)
+                            .onUpdate(() => {})
+                            .start()
+                        animateDoor = false
+                    }
+
+                    // Create an empty Geometry where we will put the particles
+                    tunnelTime += 0.01
+                    // First loop through all the circles
+                    for (let i = 0; i < tubeDetail; i++) {
+                        // Get the normal values for each circle
+                        const normal = frames.normals[i]
+                        // Get the binormal values
+                        const binormal = frames.binormals[i]
+
+                        // Calculate the index of the circle (from 0 to 1)
+                        const index = i / tubeDetail
+                        // Get the coordinates of the point in the center of the circle
+                        const p = tunnelPath.getPointAt(index)
+
+                        // Loop for the amount of particles we want along each circle
+                        for (let j = 0; j < circlesDetail; j++) {
+                            // Clone the position of the point in the center
+                            const position = p.clone()
+
+                            // Calculate the angle for each particle along the circle (from 0 to Pi*2)
+                            const angle =
+                                i % 2 === 0
+                                    ? ((j + tunnelTime + i / 10) /
+                                          circlesDetail) *
+                                      Math.PI *
+                                      2
+                                    : ((j - tunnelTime - i / 10) /
+                                          circlesDetail) *
+                                      Math.PI *
+                                      2
+                            // Calculate the sine of the angle
+                            const sin = Math.sin(angle)
+                            // Calculate the cosine from the angle
+                            const cos = -Math.cos(angle)
+
+                            // Calculate the normal of each point based on its angle
+                            const normalPoint = new Vector3(0, 0, 0)
+                            normalPoint.x = cos * normal.x + sin * binormal.x
+                            normalPoint.y = cos * normal.y + sin * binormal.y
+                            normalPoint.z = cos * normal.z + sin * binormal.z
+                            // Multiple the normal by the radius
+                            normalPoint.multiplyScalar(radius)
+
+                            // We add the normal values for each point
+                            position.add(normalPoint)
+                            theTunnel.geometry.vertices[
+                                i * circlesDetail + j
+                            ].copy(position)
+
+                            const noiseIndex =
+                                ((Noise.noise.simplex3(
+                                    p.x * 0.04,
+                                    p.y * 0.04,
+                                    p.z * 0.04,
+                                ) +
+                                    1 +
+                                    tunnelTime / 10) /
+                                    2) *
+                                360
+                            const color = new Color(
+                                'hsl(' + noiseIndex + ',80%,50%)',
+                            )
+                            theTunnel.geometry.colors[
+                                i * circlesDetail + j
+                            ].set(color)
+                        }
+                    }
+                    theTunnel.geometry.verticesNeedUpdate = true
+                    theTunnel.geometry.colorsNeedUpdate = true
+                    // if ((percentage < 0.985) & animateTunnel) {
+                    //     percentage += 0.001
+                    //     // Get the point where the camera should go
+                    //     const p1 = tunnelPath.getPointAt(percentage % 1)
+                    //     // Get the point where the camera should look at
+                    //     const p2 = tunnelPath.getPointAt(
+                    //         (percentage + 0.01) % 1,
+                    //     )
+                    //     camera.position.set(p1.x, p1.y, p1.z)
+                    //     camera.lookAt(p2)
+                    // } else {
+                    //     camera.position.set(500, 500, -500)
+                    //     camera.lookAt(500, 500, -1000)
+                    // }
                 }
+                // Increase the percentage
             }
         }
 

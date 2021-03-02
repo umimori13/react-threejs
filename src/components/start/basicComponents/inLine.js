@@ -101,6 +101,9 @@ const inLine = () => {
         const mesh = new Mesh(lastGeometry, shaderMaterial)
         result2 = mesh
     }
+    result1.geometry.setDrawRange(0, 0)
+    result1.geometry.setDrawRange(0, 0)
+
     return [result1, result2]
 }
 

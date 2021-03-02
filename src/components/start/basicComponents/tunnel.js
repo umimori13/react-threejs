@@ -1,29 +1,44 @@
 import {
     CatmullRomCurve3,
+    Color,
+    DoubleSide,
     Geometry,
+    Mesh,
+    MeshBasicMaterial,
     Points,
     PointsMaterial,
+    TextureLoader,
+    TubeGeometry,
     Vector3,
+    VertexColors,
 } from 'three'
+
+import * as Noise from '../perlin'
+import png from '../../../assets/textures/dotTexture.png'
 
 const tunnel = () => {
     const points = [
-        [68.5, 185.5],
-        [1, 262.5],
-        [270.9, 281.9],
-        [345.5, 212.8],
-        [178, 155.7],
-        [240.3, 72.3],
-        [153.4, 0.6],
-        [52.6, 53.3],
-        [68.5, 185.5],
+        [13, 10, -3],
+        [10, 10, -30],
+        [0, 10, -55],
+        [-20, 10, -70],
+        [-40, 10, -80],
+        [-50, 10, -100],
+        [80, 10, -200],
+        [80, -90, -400],
+        [80, -190, -500],
+        // [178, 155.7],
+        // [240.3, 72.3],
+        // [153.4, 0.6],
+        // [52.6, 53.3],
+        // [68.5, 185.5],
     ]
 
     //Convert the array of points into vertices
     for (var i = 0; i < points.length; i++) {
         var x = points[i][0]
-        var y = 0
-        var z = points[i][1]
+        var y = points[i][1]
+        var z = points[i][2]
         points[i] = new Vector3(x, y, z)
     }
     //Create a path from the points
@@ -35,7 +50,7 @@ const tunnel = () => {
     const circlesDetail = 10
 
     // Define the radius of the finale tube
-    const radius = 5
+    const radius = 8
     // Get all the circles that will compose the tube
     const frames = path.computeFrenetFrames(tubeDetail, true)
 
@@ -77,19 +92,35 @@ const tunnel = () => {
             // We add the normal values for each point
             position.add(normalPoint)
             geometry.vertices.push(position)
+
+            var noiseIndex =
+                ((Noise.noise.simplex3(p.x * 0.04, p.y * 0.04, p.z * 0.04) +
+                    1) /
+                    2) *
+                360
+            var color = new Color('hsl(' + noiseIndex + ',80%,50%)')
+            geometry.colors.push(color)
         }
     }
 
+    const dotMap = new TextureLoader().load(png)
     // Material for the points
     const material = new PointsMaterial({
+        map: dotMap,
         size: 1, // The size of each point
         sizeAttenuation: true, // If we want the points to change size depending of distance with camera
-        color: 0xff0000, // The color of the points
+        color: 0xffffff, // The color of the points
+        vertexColors: VertexColors,
     })
 
     // Create a points object based on the vertices we calculated and the material
     const tube = new Points(geometry, material)
     //Add tube into the scene
-    scene.add(tube)
+    console.log('tube :>> ', tube)
+    const geo = new TubeGeometry(path, 300, 10, 10, false)
+    const material2 = new MeshBasicMaterial({ color: 0x000, side: DoubleSide })
+    const mesh = new Mesh(geo, material2)
+
+    return [tube, path, mesh]
 }
 export default tunnel
