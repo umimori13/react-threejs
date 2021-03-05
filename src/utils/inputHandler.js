@@ -223,6 +223,7 @@ export class InputHandler extends EventDispatcher {
 
     onMouseMove(e) {
         e.preventDefault()
+        // console.log('e :>> ', e)
         // e.stopImmediatePropagation()
         // e.nativeEvent.stopPropagation()
 
@@ -328,7 +329,9 @@ export class InputHandler extends EventDispatcher {
                     object.dispatchEvent({
                         type: 'mousemove',
                         object: object,
+                        element: hoveredElements,
                     })
+                    console.log('hoverdElements :>> ', hoveredElements)
                 }
             }
             for (let inputListener of this.getSortedListeners()) {

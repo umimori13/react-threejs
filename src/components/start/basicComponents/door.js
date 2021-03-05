@@ -139,6 +139,8 @@ const door = () => {
 
     const anotherMesh = new Mesh(newGeometry, material)
     console.log('mesh :>> ', mesh)
+    mesh.position.z = -0.1
+    anotherMesh.position.z = -0.1
     return [mesh, anotherMesh]
 }
 

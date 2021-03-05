@@ -102,7 +102,9 @@ const inLine = () => {
         result2 = mesh
     }
     result1.geometry.setDrawRange(0, 0)
-    result1.geometry.setDrawRange(0, 0)
+    result2.geometry.setDrawRange(0, 0)
+    result1.position.z = -0.1
+    result2.position.z = -0.1
 
     return [result1, result2]
 }
